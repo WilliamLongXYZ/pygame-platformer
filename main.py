@@ -21,19 +21,13 @@ TILE_SIZE = grass_image.get_width()
 
 target_fps = 60
 
-game_map = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-            ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-            ['0','0','0','0','0','0','0','0','0','0','0','0','0','2','0','0','0','0','0'],
-            ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-            ['0','0','0','0','0','0','0','2','2','2','2','2','0','0','0','0','0','0','0'],
-            ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-            ['2','2','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','2','2'],
-            ['1','1','2','2','2','2','2','2','2','2','2','2','2','2','2','2','2','1','1'],
-            ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-            ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-            ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-            ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-            ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1']]
+scroll = [0,0]
+
+def load_map(path):
+    with open(path+'.txt','r') as f:
+        data = f.read().split('\n')
+    game_map = [list(row) for row in data]
+    return game_map
 
 def collision_test(rect, tiles):
     return [tile for tile in tiles if rect.colliderect(tile)]
@@ -73,8 +67,11 @@ def main():
     player_rect = pygame.Rect(50, 50, player_image.get_width(), player_image.get_height())
     test_rect = pygame.Rect(100,100,100,50)
 
+    game_map = load_map('map')
     while True:
         display.fill((146,244,255))
+        scroll[0] += (player_rect.x-scroll[0]-152)/20
+        scroll[1] += (player_rect.y+scroll[1]-106)/20
 
         tile_rects = []
         y = 0
@@ -82,9 +79,9 @@ def main():
             x = 0
             for tile in row:
                 if tile == '1':
-                    display.blit(dirt_image, (x * TILE_SIZE, y * TILE_SIZE))
+                    display.blit(dirt_image, (x*16+scroll[0], y*16+scroll[1]))
                 if tile == '2':
-                    display.blit(grass_image, (x * TILE_SIZE, y * TILE_SIZE))
+                    display.blit(grass_image, (x*16+scroll[0], y*16+scroll[1]))
                 if tile != '0':
                     tile_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
                 x += 1
@@ -110,7 +107,7 @@ def main():
         else:
             air_timer += 1
 
-        display.blit(player_image, (player_rect.x, player_rect.y))
+        display.blit(player_image, (player_rect.x+scroll[0], player_rect.y+scroll[1]))
 
         for event in pygame.event.get():
             if event.type == QUIT:
