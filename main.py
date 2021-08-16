@@ -21,7 +21,7 @@ TILE_SIZE = grass_image.get_width()
 
 target_fps = 60
 
-scroll = [0,0]
+true_scroll = [0,0]
 
 def load_map(path):
     with open(path+'.txt','r') as f:
@@ -70,20 +70,23 @@ def main():
     game_map = load_map('map')
     while True:
         display.fill((146,244,255))
-        scroll[0] += (player_rect.x-scroll[0]-152)/20
-        scroll[1] += (player_rect.y+scroll[1]-106)/20
+        true_scroll[0] += (player_rect.x-true_scroll[0]-152)/20
+        true_scroll[1] += (player_rect.y-true_scroll[1]-106)/20
+        scroll = true_scroll.copy()
+        scroll[0] = int(scroll[0])
+        scroll[1] = int(scroll[1])
 
         tile_rects = []
         y = 0
-        for row in game_map:
+        for layer in game_map:
             x = 0
-            for tile in row:
+            for tile in layer:
                 if tile == '1':
-                    display.blit(dirt_image, (x*16+scroll[0], y*16+scroll[1]))
+                    display.blit(dirt_image,(x*16-scroll[0],y*16-scroll[1]))
                 if tile == '2':
-                    display.blit(grass_image, (x*16+scroll[0], y*16+scroll[1]))
+                    display.blit(grass_image,(x*16-scroll[0],y*16-scroll[1]))
                 if tile != '0':
-                    tile_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                    tile_rects.append(pygame.Rect(x*16,y*16,16,16))
                 x += 1
             y += 1
 
@@ -107,7 +110,7 @@ def main():
         else:
             air_timer += 1
 
-        display.blit(player_image, (player_rect.x+scroll[0], player_rect.y+scroll[1]))
+        display.blit(player_image,(player_rect.x-scroll[0],player_rect.y-scroll[1]))
 
         for event in pygame.event.get():
             if event.type == QUIT:
