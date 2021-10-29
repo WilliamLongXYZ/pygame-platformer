@@ -12,8 +12,6 @@ screen = pygame.display.set_mode(WINDOW_SIZE,0,32)
 display = pygame.Surface((300, 200))
 
 
-player_image = pygame.image.load('images/sprites/player.png').convert()
-player_image.set_colorkey((255, 255, 255))
 
 grass_image = pygame.image.load('images/tiles/grass.png').convert()
 dirt_image = pygame.image.load('images/tiles/dirt.png').convert()
@@ -28,6 +26,37 @@ def load_map(path):
         data = f.read().split('\n')
     game_map = [list(row) for row in data]
     return game_map
+
+animation_frames = {}
+
+def load_animation(path, frame_durations):
+    animation_name = path.split('/')[-1]
+    animation_frame_data = []
+    i = 0
+    for frames in frame_durations:
+        animation_frame_id = animation_name+str(i)
+        image_location = path+'/'+animation_frame_id+'.png'
+        animation_image = pygame.image.load(image_location)
+        animation_image.set_colorkey((255, 255, 255))
+        animation_frames[animation_frame_id] = animation_image.copy()
+        for j in range(frames):
+            animation_frame_data.append(animation_frame_id)
+        i+=1
+    return animation_frame_data
+
+def change_action(current_action,frame,new):
+    if current_action != new:
+        current_action = new
+        frame = 0
+    return current_action, frame
+
+animation_database = {}
+animation_database['run'] = load_animation('animations/run', [15, 15, 15, 15])
+# animation_database['idle'] = load_animation('animations/idle', [])
+
+player_animation = 'idle'
+player_frame = 0
+player_flip = False
 
 def collision_test(rect, tiles):
     return [tile for tile in tiles if rect.colliderect(tile)]
@@ -110,7 +139,7 @@ def main():
         else:
             air_timer += 1
 
-        display.blit(player_image,(player_rect.x-scroll[0],player_rect.y-scroll[1]))
+        display.blit(player_image, (player_rect.x-scroll[0],player_rect.y-scroll[1]))
 
         for event in pygame.event.get():
             if event.type == QUIT:
